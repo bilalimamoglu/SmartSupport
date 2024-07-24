@@ -1,22 +1,27 @@
-# src/config/config.py
-
 import os
+from dotenv import load_dotenv
+
+load_dotenv()  # Load environment variables from .env file
+
 
 class Config:
     """
-    Configuration settings for Sales GPT project.
+    Configuration settings for Smart Support project.
     """
-    # Directory paths
+    # Determine the base directory of the project
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    DATA_DIR = os.path.join(BASE_DIR, 'data')
+    PROJECT_ROOT = os.path.dirname(BASE_DIR)
+
+    # Directory paths
+    DATA_DIR = os.path.join(PROJECT_ROOT, 'data')
     LEADS_DIR = os.path.join(DATA_DIR, 'leads')
     RESPONSES_DIR = os.path.join(DATA_DIR, 'responses')
 
     # Logging settings
-    LOG_FILE = os.path.join(BASE_DIR, 'logs', 'sales_gpt.log')
+    LOG_FILE = os.path.join(PROJECT_ROOT, 'logs', 'smart_support.log')
 
-    # LangChain settings
-    LANGCHAIN_API_KEY = os.getenv('LANGCHAIN_API_KEY', 'your-langchain-api-key')
+    # OpenAI settings
+    OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
     # Other settings
     RESPONSE_LENGTH = 200

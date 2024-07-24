@@ -1,0 +1,27 @@
+[
+    {
+        "lead_id": "1",
+        "response_text": "Dear valued customer, Thank you for your interest in our product. We are excited to offer you our new product. Best regards, Sales Team",
+        "timestamp": "2024-07-24T10:00:00Z"
+    },
+    {
+        "lead_id": "2",
+        "response_text": "Dear valued customer, We appreciate your inquiry about our services. Our team will contact you shortly with more information. Best regards, Sales Team",
+        "timestamp": "2024-07-24T11:00:00Z"
+    },
+    {
+        "lead_id": "3",
+        "response_text": "Dear valued customer, Your request for a product demo has been received. We will schedule a demo session soon. Best regards, Sales Team",
+        "timestamp": "2024-07-24T12:00:00Z"
+    },
+    {
+        "lead_id": "4",
+        "response_text": "Dear valued customer, Thank you for your feedback. We are always looking to improve our services. Best regards, Sales Team",
+        "timestamp": "2024-07-24T13:00:00Z"
+    },
+    {
+        "lead_id": "5",
+        "response_text": "Dear valued customer, We have received your query regarding pricing. Our sales team will get back to you with the details. Best regards, Sales Team",
+        "timestamp": "2024-07-24T14:00:00Z"
+    }
+]

@@ -1,5 +1,3 @@
-# src/config/constants.py
-
 # Constants for lead scoring
 LEAD_STATUS_NEW = 'new'
 LEAD_STATUS_CONTACTED = 'contacted'

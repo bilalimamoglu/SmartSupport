@@ -1,5 +1,3 @@
-# src/models/lead.py
-
 class Lead:
     """
     Data model for a sales lead.

@@ -1,5 +1,3 @@
-# src/models/response.py
-
 from datetime import datetime
 
 class Response:

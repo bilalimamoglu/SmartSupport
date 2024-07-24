@@ -1,0 +1,42 @@
+[
+    {
+        "id": "1",
+        "name": "John Doe",
+        "email": "john@example.com",
+        "phone": "1234567890",
+        "status": "new",
+        "score": 0.0
+    },
+    {
+        "id": "2",
+        "name": "Jane Smith",
+        "email": "jane@example.com",
+        "phone": "0987654321",
+        "status": "new",
+        "score": 0.0
+    },
+    {
+        "id": "3",
+        "name": "Alice Johnson",
+        "email": "alice@example.com",
+        "phone": "5551234567",
+        "status": "new",
+        "score": 0.0
+    },
+    {
+        "id": "4",
+        "name": "Bob Brown",
+        "email": "bob@example.com",
+        "phone": "4449876543",
+        "status": "new",
+        "score": 0.0
+    },
+    {
+        "id": "5",
+        "name": "Charlie Davis",
+        "email": "charlie@example.com",
+        "phone": "3337654321",
+        "status": "new",
+        "score": 0.0
+    }
+]
