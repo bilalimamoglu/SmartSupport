@@ -13,43 +13,43 @@ Smart Support is an autonomous sales agent that leverages OpenAI API to generate
 
 1. Clone the repository:
 
-```sh
-git clone https://github.com/yourusername/smart-support.git
-cd smart-support
-```
+    ```sh
+    git clone https://github.com/yourusername/smart-support.git
+    cd smart-support
+    ```
 
 2. Create a virtual environment and activate it:
-3. 
-```sh
-python -m venv venv
-source venv/bin/activate  # On Windows use `venv\Scripts\activate`
-```
+
+    ```sh
+    python -m venv venv
+    source venv/bin/activate  # On Windows use `venv\Scripts\activate`
+    ```
 
 3. Install the dependencies:
 
-```sh
-pip install -r requirements.txt
-```
+    ```sh
+    pip install -r requirements.txt
+    ```
 
-4. Set up environment variables. You can create a .env file in the root directory and add:
+4. Set up environment variables. You can create a `.env` file in the root directory and add:
 
-```sh
-OPENAI_API_KEY=your-openai-api-key
-```
+    ```sh
+    OPENAI_API_KEY=your-openai-api-key
+    ```
 
 ## Usage
 
 1. Make sure the necessary data directories exist:
 
-```sh
-mkdir -p data/leads data/responses
-```
+    ```sh
+    mkdir -p data/leads data/responses
+    ```
 
 2. Run the application:
 
-```sh
-python src/main.py
-```
+    ```sh
+    python src/main.py
+    ```
 
 ## Running Tests
 
@@ -60,8 +60,9 @@ python -m unittest discover src/tests
 ```
 
 ## Configuration
-Configuration settings can be found in src/config/config.py. Update the settings as needed, including paths for data directories and logging.
+
+Configuration settings can be found in `src/config/config.py`. Update the settings as needed, including paths for data directories and logging.
 
 ## Contributing
-Feel free to submit issues, fork the repository, and send pull requests. We welcome all contributions.
 
+Feel free to submit issues, fork the repository, and send pull requests. We welcome all contributions.

@@ -10,7 +10,6 @@ from src.utils.logger import setup_logger
 
 logger = setup_logger(__name__)
 
-
 class SalesPipeline:
     """
     Manages the sales pipeline.
@@ -37,7 +36,7 @@ class SalesPipeline:
         else:
             lead.update_status(LEAD_STATUS_UNQUALIFIED)
 
-        self.lead_manager.update_lead(lead.id, status=lead.status)
+        self.lead_manager.save_leads()  # Save updated leads
         logger.info(f"Lead {lead.id} moved to {lead.status}.")
         return True
 
