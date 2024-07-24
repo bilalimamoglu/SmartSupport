@@ -34,7 +34,7 @@ class ConversationChains:
             """,
             input_variables=["conversation_history"]
         )
-        return prompt, llm
+        return prompt | llm
 
     def load_sales_conversation_chain(self, llm, verbose: bool = False):
         prompt = PromptTemplate(
@@ -46,4 +46,4 @@ class ConversationChains:
                 "tools"  # Include tools as a placeholder
             ]
         )
-        return prompt, llm
+        return prompt | llm
