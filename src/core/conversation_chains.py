@@ -1,15 +1,15 @@
-from openai import AsyncOpenAI
+# src/core/conversation_chains.py
+
+from langchain_openai import OpenAI
 from src.config.config import Config
 from src.config.sales_stages import SALES_PROMPT_TEMPLATE, CONVERSATION_STAGES
-from langchain.chains import LLMChain
 from langchain.prompts import PromptTemplate
-from langchain.base_language import BaseLanguageModel
 
 class ConversationChains:
     def __init__(self):
-        self.client = AsyncOpenAI(api_key=Config.OPENAI_API_KEY)
+        self.client = OpenAI(api_key=Config.OPENAI_API_KEY)
 
-    def load_stage_analyzer_chain(self, llm: BaseLanguageModel, verbose: bool = False):
+    def load_stage_analyzer_chain(self, llm, verbose: bool = False):
         prompt = PromptTemplate(
             template="""
             You are a sales assistant helping your sales agent determine which stage of a sales conversation to stay at or move to when talking to a user.
@@ -34,15 +34,16 @@ class ConversationChains:
             """,
             input_variables=["conversation_history"]
         )
-        return LLMChain(llm=llm, prompt=prompt, verbose=verbose)
+        return prompt, llm
 
-    def load_sales_conversation_chain(self, llm: BaseLanguageModel, verbose: bool = False):
+    def load_sales_conversation_chain(self, llm, verbose: bool = False):
         prompt = PromptTemplate(
             template=SALES_PROMPT_TEMPLATE,
             input_variables=[
                 "salesperson_name", "salesperson_role", "company_name",
                 "company_business", "company_values", "conversation_purpose",
-                "conversation_type", "conversation_stage", "conversation_history"
+                "conversation_type", "conversation_stage", "conversation_history",
+                "tools"  # Include tools as a placeholder
             ]
         )
-        return LLMChain(llm=llm, prompt=prompt, verbose=verbose)
+        return prompt, llm
