@@ -1,10 +1,5 @@
-import sys
-import os
+import streamlit as st
 import asyncio
-
-# Add the src directory to the sys.path
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-
 from openai import AsyncOpenAI
 from src.config.config import Config
 from src.core.lead_manager import LeadManager
@@ -13,6 +8,7 @@ from src.core.sales_pipeline import SalesPipeline
 from src.core.tracking import InteractionTracker
 from src.core.conversation_chains import ConversationChains
 from src.config.sales_stages import CONVERSATION_STAGES
+from langchain.base_language import BaseLanguageModel
 
 # Initialize components
 lead_manager = LeadManager()
@@ -63,7 +59,50 @@ class SalesAssistant:
         self.conversation_history.append(f"User: {human_input}")
 
 
-async def main():
+# Set up Streamlit UI
+st.title("Smart Support Sales Assistant")
+
+# Input box for user query
+user_input = st.text_input("Enter your query:")
+
+if st.button("Get Response"):
+    lead_id = "1"  # For demonstration purposes, using lead ID 1
+    lead = lead_manager.get_lead(lead_id)
+
+    if lead and user_input:
+        # Generate response
+        response = asyncio.run(response_generator.generate_response(lead, user_input))
+        st.write(f"Response: {response.response_text}")
+
+        # Record interaction
+        interaction_tracker.record_interaction(lead.id, "email", response.response_text)
+
+        # Move lead to the next stage in the sales pipeline
+        sales_pipeline.move_lead_to_next_stage(lead.id)
+
+        # Display lead details
+        st.subheader("Lead Information")
+        st.json(lead.to_dict())
+
+        # Display interaction history
+        st.subheader("Interaction History")
+        interactions = interaction_tracker.get_interactions(lead.id)
+        for interaction in interactions:
+            st.write(f"{interaction['timestamp']}: {interaction['details']}")
+
+        # Display sales pipeline stage
+        st.subheader("Sales Pipeline Stage")
+        st.write(f"Current Stage: {lead.status}")
+
+# Display all leads
+st.subheader("All Leads")
+all_leads = lead_manager.get_all_leads()
+for lead in all_leads:
+    st.json(lead.to_dict())
+
+
+# Function to initialize and run the Sales Assistant
+async def run_sales_assistant():
     llm = AsyncOpenAI(api_key=Config.OPENAI_API_KEY)
     stage_analyzer_chain = conversation_chains.load_stage_analyzer_chain(llm)
     sales_conversation_chain = conversation_chains.load_sales_conversation_chain(llm)
@@ -77,11 +116,11 @@ async def main():
     sales_assistant.seed_agent()
 
     stage_response = await sales_assistant.determine_conversation_stage()
-    print(f"Conversation Stage: {CONVERSATION_STAGES[stage_response]}")
+    st.write(f"Conversation Stage: {CONVERSATION_STAGES[stage_response]}")
 
     step_response = await sales_assistant.step()
-    print(f"Sales Assistant Response: {step_response}")
+    st.write(f"Sales Assistant Response: {step_response}")
 
 
-if __name__ == "__main__":
-    asyncio.run(main())
+if st.button("Run Sales Assistant"):
+    asyncio.run(run_sales_assistant())
