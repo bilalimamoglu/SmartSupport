@@ -8,11 +8,12 @@ from langchain.text_splitter import CharacterTextSplitter
 from langchain_openai import OpenAI
 from src.config.config import Config
 from src.utils.logger import setup_logger
+from src.config.constants import DEFAULT_MODEL
 
 # Setup logger
 logger = setup_logger(__name__)
 
-async def load_sales_doc_vector_store(file_name: str):
+def load_sales_doc_vector_store(file_name: str):
     fullpath = os.path.join(Config.PROJECT_ROOT, 'data', 'knowledge', file_name)
     logger.info(f"Loading documents from {fullpath}")
     loader = TextLoader(fullpath)
@@ -23,15 +24,15 @@ async def load_sales_doc_vector_store(file_name: str):
     logger.info("Creating vector store from documents")
     return FAISS.from_documents(new_docs, OpenAIEmbeddings())
 
-async def setup_knowledge_base(file_name: str, llm: OpenAI):
+def setup_knowledge_base(file_name: str, llm: OpenAI):
     logger.info(f"Setting up knowledge base for {file_name}")
-    vector_store = await load_sales_doc_vector_store(file_name)
+    vector_store = load_sales_doc_vector_store(file_name)
     logger.info("Creating RetrievalQA from vector store")
-    return RetrievalQA.from_chain_type(llm, retriever=vector_store.as_retriever())
+    return RetrievalQA.from_chain_type(OpenAI(api_key=Config.OPENAI_API_KEY, model=DEFAULT_MODEL), retriever=vector_store.as_retriever())
 
 async def get_tools(product_catalog: str):
     logger.info(f"Initializing tools for product catalog {product_catalog}")
-    chain = await setup_knowledge_base(product_catalog, OpenAI(api_key=Config.OPENAI_API_KEY))
+    chain = setup_knowledge_base(product_catalog, OpenAI(api_key=Config.OPENAI_API_KEY, model="gpt-4"))
     tools = [
         {
             "name": "ProductSearch",
