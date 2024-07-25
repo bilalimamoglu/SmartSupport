@@ -1,5 +1,3 @@
-# app.py
-
 import asyncio
 import chainlit as cl
 from langchain_openai import OpenAI
@@ -10,24 +8,21 @@ from src.config.sales_stages import CONVERSATION_STAGES
 from src.core.sales_assistant import SalesAssistant
 from src.utils.memory import MemoryManager
 from src.utils.knowledge_base import get_tools
-from src.config.constants import DEFAULT_MODEL
 
 # Initialize components
 lead_manager = LeadManager()
 conversation_chains = ConversationChains()
 memory_manager = MemoryManager()
+conversation_history = []
 
 @cl.on_chat_start
 async def on_chat_start():
-    """
-    Initialize the chat session and the sales assistant agent.
-    """
-    llm = OpenAI(api_key=Config.OPENAI_API_KEY, model=DEFAULT_MODEL)
+    llm = OpenAI(api_key=Config.OPENAI_API_KEY)
     stage_analyzer_chain = conversation_chains.load_stage_analyzer_chain(llm)
     sales_conversation_chain = conversation_chains.load_sales_conversation_chain(llm)
 
     global sales_assistant
-    tools = await get_tools('product_catalog.txt')
+    tools = await get_tools('product_catalog.txt')  # Adjust the filename to your actual product catalog file
 
     sales_assistant = SalesAssistant(
         stage_analyzer_chain=stage_analyzer_chain,
@@ -50,11 +45,6 @@ async def on_chat_start():
 
 @cl.on_message
 async def on_message(message):
-    """
-    Handle incoming messages from the user and generate appropriate responses from the sales assistant.
-
-    :param message: Incoming message object from Chainlit.
-    """
     user_input = message.content  # Extract the message content
 
     sales_assistant.human_step(user_input)

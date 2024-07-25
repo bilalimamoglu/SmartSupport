@@ -1,13 +1,13 @@
+# src/core/conversation_chains.py
+
 from langchain_openai import OpenAI
 from src.config.config import Config
-from src.config.sales_stages import SALES_PROMPT_TEMPLATE
+from src.config.sales_stages import SALES_PROMPT_TEMPLATE, CONVERSATION_STAGES
 from langchain.prompts import PromptTemplate
-from src.config.constants import DEFAULT_MODEL
-
 
 class ConversationChains:
     def __init__(self):
-        self.client = OpenAI(api_key=Config.OPENAI_API_KEY, model=DEFAULT_MODEL)  # Use GPT-4 model here
+        self.client = OpenAI(api_key=Config.OPENAI_API_KEY)
 
     def load_stage_analyzer_chain(self, llm, verbose: bool = False):
         prompt = PromptTemplate(
@@ -28,7 +28,7 @@ class ConversationChains:
             6. Objection handling: Address any objections that the prospect may have regarding your product/service. Be prepared to provide evidence or testimonials to support your claims.
             7. Close: Ask for the sale by proposing a next step. This could be a demo, a trial or a meeting with decision-makers. Ensure to summarize what has been discussed and reiterate the benefits.
             8. End conversation: It's time to end the call as there is nothing else to be said.
-
+    
             Only answer with a number between 1 through 8 with a best guess of what stage should the conversation continue with.
             If there is no conversation history, output 1.
             The answer needs to be one number only, no words.
