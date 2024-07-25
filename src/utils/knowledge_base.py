@@ -12,7 +12,7 @@ from src.utils.logger import setup_logger
 # Setup logger
 logger = setup_logger(__name__)
 
-def load_sales_doc_vector_store(file_name: str):
+async def load_sales_doc_vector_store(file_name: str):
     fullpath = os.path.join(Config.PROJECT_ROOT, 'data', 'knowledge', file_name)
     logger.info(f"Loading documents from {fullpath}")
     loader = TextLoader(fullpath)
@@ -23,15 +23,15 @@ def load_sales_doc_vector_store(file_name: str):
     logger.info("Creating vector store from documents")
     return FAISS.from_documents(new_docs, OpenAIEmbeddings())
 
-def setup_knowledge_base(file_name: str, llm: OpenAI):
+async def setup_knowledge_base(file_name: str, llm: OpenAI):
     logger.info(f"Setting up knowledge base for {file_name}")
-    vector_store = load_sales_doc_vector_store(file_name)
+    vector_store = await load_sales_doc_vector_store(file_name)
     logger.info("Creating RetrievalQA from vector store")
     return RetrievalQA.from_chain_type(llm, retriever=vector_store.as_retriever())
 
-def get_tools(product_catalog: str):
+async def get_tools(product_catalog: str):
     logger.info(f"Initializing tools for product catalog {product_catalog}")
-    chain = setup_knowledge_base(product_catalog, OpenAI(api_key=Config.OPENAI_API_KEY))
+    chain = await setup_knowledge_base(product_catalog, OpenAI(api_key=Config.OPENAI_API_KEY))
     tools = [
         {
             "name": "ProductSearch",

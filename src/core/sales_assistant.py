@@ -22,12 +22,9 @@ class SalesAssistant:
             "conversation_history": conversation_history_str
         })
 
-        if isinstance(result, str):
-            stage_number = re.search(r'\d+', result)
-            if stage_number:
-                self.current_stage = stage_number.group().strip()
-            else:
-                self.current_stage = "Unknown"
+        stage_number = re.search(r'\d+', result)
+        if stage_number:
+            self.current_stage = stage_number.group().strip()
         else:
             self.current_stage = "Unknown"
 
