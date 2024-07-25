@@ -62,5 +62,5 @@ Previous conversation history:
 {conversation_history}
 
 {salesperson_name}:
-{agent_scratchpad}  # Updated this placeholder
+{agent_scratchpad} 
 """

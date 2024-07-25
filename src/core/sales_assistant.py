@@ -26,7 +26,7 @@ class SalesAssistant:
 
     async def step(self):
         conversation_history_str = "\n".join(self.conversation_history)
-        result = await self.sales_conversation_utterance_chain.acall({
+        result = await self.sales_conversation_utterance_chain.ainvoke({
             "salesperson_name": "Ted Lasso",
             "salesperson_role": "Business Development Representative",
             "company_name": "Sleep Haven",
@@ -35,9 +35,13 @@ class SalesAssistant:
             "conversation_purpose": "find out whether they are looking to achieve better sleep via buying a premier mattress.",
             "conversation_type": "call",
             "conversation_stage": self.current_stage,
-            "conversation_history": conversation_history_str
+            "conversation_history": conversation_history_str,
+            "tools": "",
+            "tool_input": "",
+            "tool_result": "",
+            "agent_scratchpad": ""
         })
-        response_text = result['text'].strip()
+        response_text = result.strip()
         self.conversation_history.append(f"Ted Lasso: {response_text}")
         return response_text
 

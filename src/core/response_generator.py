@@ -24,7 +24,7 @@ class ResponseGenerator:
         """
         try:
             response = await client.chat.completions.create(
-                model="gpt-3.5-turbo",
+                model="gpt-4o-mini",
                 messages=[
                     {"role": "system", "content": "You are a helpful sales assistant."},
                     {"role": "user", "content": f"Dear valued customer, {message} Best regards, Sales Team"}
