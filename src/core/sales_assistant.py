@@ -1,3 +1,5 @@
+# src/core/sales_assistant.py
+
 import re
 from src.utils.memory import MemoryManager
 from src.utils.knowledge_base import setup_knowledge_base, get_tools
@@ -7,6 +9,15 @@ from src.config.constants import DEFAULT_MODEL
 
 class SalesAssistant:
     def __init__(self, stage_analyzer_chain, sales_conversation_utterance_chain, memory_manager, tools=None, use_tools=False):
+        """
+        Initialize the SalesAssistant with the necessary components.
+
+        :param stage_analyzer_chain: The chain to determine the conversation stage.
+        :param sales_conversation_utterance_chain: The chain to generate conversation responses.
+        :param memory_manager: The memory manager to handle conversation history.
+        :param tools: Optional tools for assisting in the conversation.
+        :param use_tools: Whether to use the tools in the conversation.
+        """
         self.stage_analyzer_chain = stage_analyzer_chain
         self.sales_conversation_utterance_chain = sales_conversation_utterance_chain
         self.memory_manager = memory_manager

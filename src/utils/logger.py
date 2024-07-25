@@ -1,3 +1,5 @@
+# src/utils/logger.py
+
 import logging
 import os
 from src.config.config import Config
@@ -5,6 +7,9 @@ from src.config.config import Config
 def setup_logger(name):
     """
     Set up a logger with the specified name.
+
+    :param name: The name of the logger.
+    :return: The configured logger instance.
     """
     logger = logging.getLogger(name)
     logger.setLevel(logging.DEBUG)  # Set the logging level to DEBUG

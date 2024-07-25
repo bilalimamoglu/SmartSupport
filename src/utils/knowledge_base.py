@@ -1,3 +1,5 @@
+# src/utils/knowledge_base.py
+
 import os
 import logging
 from langchain.chat_models import ChatOpenAI
@@ -15,6 +17,12 @@ from src.utils.logger import setup_logger
 logger = setup_logger(__name__)
 
 async def load_sales_doc_vector_store(file_name: str):
+    """
+    Load a vector store for sales documents from a given file.
+
+    :param file_name: The name of the file containing sales documents.
+    :return: A FAISS vector store containing the documents.
+    """
     fullpath = os.path.join(Config.PROJECT_ROOT, 'data', 'knowledge', file_name)
     logger.info(f"Loading documents from {fullpath}")
     loader = TextLoader(fullpath)
@@ -26,6 +34,13 @@ async def load_sales_doc_vector_store(file_name: str):
     return FAISS.from_documents(new_docs, OpenAIEmbeddings())
 
 async def setup_knowledge_base(file_name: str, llm: OpenAI):
+    """
+    Set up the knowledge base for a given file and language model.
+
+    :param file_name: The name of the file containing knowledge base data.
+    :param llm: The language model instance.
+    :return: A RetrievalQA instance for querying the knowledge base.
+    """
     logger.info(f"Setting up knowledge base for {file_name}")
     vector_store = await load_sales_doc_vector_store(file_name)
     logger.info("Creating RetrievalQA from vector store")
@@ -33,6 +48,12 @@ async def setup_knowledge_base(file_name: str, llm: OpenAI):
     return  RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", retriever=vector_store.as_retriever())
 
 async def get_tools(product_catalog: str):
+    """
+    Initialize tools for product catalog management.
+
+    :param product_catalog: The file name of the product catalog.
+    :return: A list of tools for managing the product catalog.
+    """
     logger.info(f"Initializing tools for product catalog {product_catalog}")
     chain = await setup_knowledge_base(product_catalog, OpenAI(api_key=Config.OPENAI_API_KEY))
     tools = [

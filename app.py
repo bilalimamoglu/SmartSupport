@@ -18,8 +18,10 @@ conversation_history = []
 
 @cl.on_chat_start
 async def on_chat_start():
+    """
+    Event handler for the start of the chat session. Initializes the sales assistant and sends the initial messages.
+    """
     llm = ChatOpenAI(api_key=Config.OPENAI_API_KEY, model_name=DEFAULT_MODEL)
-    #llm = OpenAI(api_key=Config.OPENAI_API_KEY)  # Use DEFAULT_MODEL
     stage_analyzer_chain = conversation_chains.load_stage_analyzer_chain(llm)
     sales_conversation_chain = conversation_chains.load_sales_conversation_chain(llm)
 
@@ -47,6 +49,11 @@ async def on_chat_start():
 
 @cl.on_message
 async def on_message(message):
+    """
+    Event handler for receiving a message. Processes the message with the sales assistant and sends the response.
+
+    :param message: The incoming message from the user.
+    """
     user_input = message.content  # Extract the message content
 
     sales_assistant.human_step(user_input)

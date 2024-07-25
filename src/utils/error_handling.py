@@ -1,3 +1,5 @@
+# src/utils/error_handling.py
+
 class LeadDataError(Exception):
     """
     Exception raised for errors in the lead data.
@@ -5,6 +7,7 @@ class LeadDataError(Exception):
     def __init__(self, message="Invalid lead data provided."):
         self.message = message
         super().__init__(self.message)
+
 
 class ResponseGenerationError(Exception):
     """
