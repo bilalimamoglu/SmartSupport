@@ -1,6 +1,6 @@
 import asyncio
 import chainlit as cl
-from langchain_community.llms import OpenAI
+from langchain_openai import OpenAI
 from src.config.config import Config
 from src.core.lead_manager import LeadManager
 from src.core.response_generator import ResponseGenerator
@@ -19,22 +19,22 @@ interaction_tracker = InteractionTracker(lead_manager)
 conversation_chains = ConversationChains()
 
 memory_manager = MemoryManager()
-conversation_history = memory_manager.get_long_term_memory()
+conversation_history = []
 
 @cl.on_chat_start
 async def on_chat_start():
     llm = OpenAI(api_key=Config.OPENAI_API_KEY)
     stage_analyzer_chain = conversation_chains.load_stage_analyzer_chain(llm)
     sales_conversation_chain = conversation_chains.load_sales_conversation_chain(llm)
-    knowledge_base_chain = await setup_knowledge_base("photography_knowledge.txt", llm)
+    knowledge_base_chain = setup_knowledge_base("product_catalog.txt", llm)
 
     global sales_assistant
     sales_assistant = SalesAssistant(
         stage_analyzer_chain=stage_analyzer_chain,
         sales_conversation_utterance_chain=sales_conversation_chain,
-        memory_manager=memory_manager,
         knowledge_base_chain=knowledge_base_chain,
-        use_tools=True
+        memory_manager=memory_manager,
+        use_tools=False
     )
 
     sales_assistant.seed_agent()
@@ -54,22 +54,22 @@ async def on_message(message):
 
     sales_assistant.human_step(user_input)
 
-    stage_response = await sales_assistant.determine_conversation_stage()
-    step_response = await sales_assistant.step()
+    if "budget" in user_input or "under" in user_input:
+        kb_response = await sales_assistant.query_knowledge_base(f"Best photography equipment under {user_input}")
+        await cl.Message(
+            content=f"*Knowledge Base Response*: {kb_response}",
+        ).send()
+    else:
+        stage_response = await sales_assistant.determine_conversation_stage()
+        step_response = await sales_assistant.step()
 
-    await cl.Message(
-        content=f"*Sales Assistant thought*: {CONVERSATION_STAGES.get(stage_response, 'Unknown Stage')}",
-    ).send()
+        await cl.Message(
+            content=f"*Sales Assistant thought*: {CONVERSATION_STAGES.get(stage_response, 'Unknown Stage')}",
+        ).send()
 
-    await cl.Message(
-        content=f"Ted Lasso: {step_response}",
-    ).send()
-
-    # Example knowledge base query
-    kb_response = await sales_assistant.query_knowledge_base("Tell me about the best camera for beginners.")
-    await cl.Message(
-        content=f"Knowledge Base Response: {kb_response}",
-    ).send()
+        await cl.Message(
+            content=f"Ted Lasso: {step_response}",
+        ).send()
 
 if __name__ == "__main__":
     cl.main()

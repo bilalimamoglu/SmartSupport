@@ -1,11 +1,12 @@
 import re
+from src.utils.knowledge_base import setup_knowledge_base
 
 class SalesAssistant:
-    def __init__(self, stage_analyzer_chain, sales_conversation_utterance_chain, memory_manager, knowledge_base_chain, use_tools=False):
+    def __init__(self, stage_analyzer_chain, sales_conversation_utterance_chain, knowledge_base_chain, memory_manager, use_tools=False):
         self.stage_analyzer_chain = stage_analyzer_chain
         self.sales_conversation_utterance_chain = sales_conversation_utterance_chain
-        self.memory_manager = memory_manager
         self.knowledge_base_chain = knowledge_base_chain
+        self.memory_manager = memory_manager
         self.use_tools = use_tools
         self.conversation_history = []
         self.current_stage = "1"
@@ -43,9 +44,9 @@ class SalesAssistant:
             "conversation_type": "call",
             "conversation_stage": self.current_stage,
             "conversation_history": conversation_history_str,
-            "tools": "",  # Modify this if needed
-            "tool_input": "",  # Modify this if needed
-            "tool_result": "",  # Modify this if needed
+            "tools": "",
+            "tool_input": "",
+            "tool_result": "",
             "agent_scratchpad": ""
         })
         response_text = result.strip()
