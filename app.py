@@ -10,14 +10,14 @@ from src.core.conversation_chains import ConversationChains
 from src.config.sales_stages import CONVERSATION_STAGES
 from src.core.sales_assistant import SalesAssistant
 from src.utils.memory import MemoryManager
-from src.utils.knowledge_base import setup_knowledge_base
+from src.utils.knowledge_base import get_tools
 
+# Initialize components
 lead_manager = LeadManager()
 response_generator = ResponseGenerator()
 sales_pipeline = SalesPipeline(lead_manager)
 interaction_tracker = InteractionTracker(lead_manager)
 conversation_chains = ConversationChains()
-
 memory_manager = MemoryManager()
 conversation_history = []
 
@@ -26,15 +26,16 @@ async def on_chat_start():
     llm = OpenAI(api_key=Config.OPENAI_API_KEY)
     stage_analyzer_chain = conversation_chains.load_stage_analyzer_chain(llm)
     sales_conversation_chain = conversation_chains.load_sales_conversation_chain(llm)
-    knowledge_base_chain = setup_knowledge_base("product_catalog.txt", llm)
 
     global sales_assistant
+    tools = get_tools('product_catalog.txt')  # Adjust the filename to your actual product catalog file
+
     sales_assistant = SalesAssistant(
         stage_analyzer_chain=stage_analyzer_chain,
         sales_conversation_utterance_chain=sales_conversation_chain,
-        knowledge_base_chain=knowledge_base_chain,
         memory_manager=memory_manager,
-        use_tools=False
+        tools=tools,
+        use_tools=True
     )
 
     sales_assistant.seed_agent()
@@ -54,22 +55,16 @@ async def on_message(message):
 
     sales_assistant.human_step(user_input)
 
-    if "budget" in user_input or "under" in user_input:
-        kb_response = await sales_assistant.query_knowledge_base(f"Best photography equipment under {user_input}")
-        await cl.Message(
-            content=f"*Knowledge Base Response*: {kb_response}",
-        ).send()
-    else:
-        stage_response = await sales_assistant.determine_conversation_stage()
-        step_response = await sales_assistant.step()
+    stage_response = await sales_assistant.determine_conversation_stage()
+    step_response = await sales_assistant.step()
 
-        await cl.Message(
-            content=f"*Sales Assistant thought*: {CONVERSATION_STAGES.get(stage_response, 'Unknown Stage')}",
-        ).send()
+    await cl.Message(
+        content=f"*Sales Assistant thought*: {CONVERSATION_STAGES.get(stage_response, 'Unknown Stage')}",
+    ).send()
 
-        await cl.Message(
-            content=f"Ted Lasso: {step_response}",
-        ).send()
+    await cl.Message(
+        content=f"Ted Lasso: {step_response}",
+    ).send()
 
 if __name__ == "__main__":
     cl.main()

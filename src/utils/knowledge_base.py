@@ -1,8 +1,7 @@
 import os
 import logging
-from openai import AsyncOpenAI
 from langchain_community.document_loaders import TextLoader
-from langchain.vectorstores import FAISS
+from langchain.vectorstores.faiss import FAISS
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.chains import RetrievalQA
 from langchain.text_splitter import CharacterTextSplitter
@@ -28,7 +27,7 @@ def setup_knowledge_base(file_name: str, llm: OpenAI):
     logger.info(f"Setting up knowledge base for {file_name}")
     vector_store = load_sales_doc_vector_store(file_name)
     logger.info("Creating RetrievalQA from vector store")
-    return RetrievalQA.from_llm(llm, retriever=vector_store.as_retriever())
+    return RetrievalQA.from_chain_type(llm, retriever=vector_store.as_retriever())
 
 def get_tools(product_catalog: str):
     logger.info(f"Initializing tools for product catalog {product_catalog}")
