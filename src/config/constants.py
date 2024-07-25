@@ -15,4 +15,4 @@ ERROR_RESPONSE_GENERATION_FAILED = 'Failed to generate response.'
 
 # Model constants
 
-DEFAULT_MODEL = "gpt-4o-mini"
+DEFAULT_MODEL = "gpt-4o-mini" # gpt-4o-mini

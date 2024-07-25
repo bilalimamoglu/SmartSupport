@@ -1,6 +1,9 @@
 import re
 from src.utils.memory import MemoryManager
 from src.utils.knowledge_base import setup_knowledge_base, get_tools
+from langchain_openai import OpenAI
+from langchain_openai import ChatOpenAI  # Use ChatOpenAI for chat models
+from src.config.constants import DEFAULT_MODEL
 
 class SalesAssistant:
     def __init__(self, stage_analyzer_chain, sales_conversation_utterance_chain, memory_manager, tools=None, use_tools=False):
@@ -13,10 +16,18 @@ class SalesAssistant:
         self.current_stage = "1"
 
     def seed_agent(self):
+        """
+        Initialize the sales assistant agent by resetting conversation history and setting the initial stage.
+        """
         self.conversation_history = []
         self.current_stage = "1"
 
     async def determine_conversation_stage(self):
+        """
+        Determine the current stage of the conversation based on the history.
+
+        :return: Current stage of the conversation.
+        """
         conversation_history_str = "\n".join(self.conversation_history)
         result = await self.stage_analyzer_chain.ainvoke({
             "conversation_history": conversation_history_str
@@ -31,9 +42,14 @@ class SalesAssistant:
         return self.current_stage
 
     async def step(self):
+        """
+        Generate a response based on the current stage of the conversation and the history.
+
+        :return: Response text.
+        """
         conversation_history_str = "\n".join(self.conversation_history)
         if self.use_tools:
-            tool_response = await self.tools[0]['chain'].acall({
+            tool_response = await self.tools[0]['chain'].ainvoke({
                 "query": conversation_history_str
             })
             response_text = tool_response['result']
@@ -61,5 +77,10 @@ class SalesAssistant:
         return response_text
 
     def human_step(self, human_input):
+        """
+        Record a human input step in the conversation history.
+
+        :param human_input: The input text from the user.
+        """
         self.conversation_history.append(f"User: {human_input}")
         self.memory_manager.update_short_term_memory(human_input)
