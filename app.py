@@ -1,6 +1,6 @@
 import asyncio
 import chainlit as cl
-from langchain_openai import OpenAI
+from langchain.chat_models import ChatOpenAI
 from src.config.config import Config
 from src.core.lead_manager import LeadManager
 from src.core.conversation_chains import ConversationChains
@@ -8,6 +8,7 @@ from src.config.sales_stages import CONVERSATION_STAGES
 from src.core.sales_assistant import SalesAssistant
 from src.utils.memory import MemoryManager
 from src.utils.knowledge_base import get_tools
+from src.config.constants import DEFAULT_MODEL
 
 # Initialize components
 lead_manager = LeadManager()
@@ -17,7 +18,8 @@ conversation_history = []
 
 @cl.on_chat_start
 async def on_chat_start():
-    llm = OpenAI(api_key=Config.OPENAI_API_KEY)
+    llm = ChatOpenAI(api_key=Config.OPENAI_API_KEY, model_name=DEFAULT_MODEL)
+    #llm = OpenAI(api_key=Config.OPENAI_API_KEY)  # Use DEFAULT_MODEL
     stage_analyzer_chain = conversation_chains.load_stage_analyzer_chain(llm)
     sales_conversation_chain = conversation_chains.load_sales_conversation_chain(llm)
 

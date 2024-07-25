@@ -33,6 +33,10 @@ class SalesAssistant:
             "conversation_history": conversation_history_str
         })
 
+        # Ensure the result is a string
+        if not isinstance(result, str):
+            result = str(result)
+
         stage_number = re.search(r'\d+', result)
         if stage_number:
             self.current_stage = stage_number.group().strip()

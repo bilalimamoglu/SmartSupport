@@ -1,5 +1,6 @@
 import os
 import logging
+from langchain.chat_models import ChatOpenAI
 from langchain_community.document_loaders import TextLoader
 from langchain.vectorstores.faiss import FAISS
 from langchain.embeddings import OpenAIEmbeddings
@@ -7,6 +8,7 @@ from langchain.chains import RetrievalQA
 from langchain.text_splitter import CharacterTextSplitter
 from langchain_openai import OpenAI
 from src.config.config import Config
+from src.config.constants import DEFAULT_MODEL
 from src.utils.logger import setup_logger
 
 # Setup logger
@@ -27,7 +29,8 @@ async def setup_knowledge_base(file_name: str, llm: OpenAI):
     logger.info(f"Setting up knowledge base for {file_name}")
     vector_store = await load_sales_doc_vector_store(file_name)
     logger.info("Creating RetrievalQA from vector store")
-    return RetrievalQA.from_chain_type(llm, retriever=vector_store.as_retriever())
+    llm = ChatOpenAI(model_name=DEFAULT_MODEL)
+    return  RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", retriever=vector_store.as_retriever())
 
 async def get_tools(product_catalog: str):
     logger.info(f"Initializing tools for product catalog {product_catalog}")
