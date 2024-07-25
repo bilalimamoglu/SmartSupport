@@ -8,6 +8,7 @@ Smart Support is an autonomous sales agent that leverages OpenAI API to generate
 - **Response Generation**: Generate sales responses using OpenAI API.
 - **Sales Pipeline Management**: Track the progress of leads through different stages.
 - **Interaction Tracking**: Record and retrieve interactions with leads.
+- **Knowledge Base Integration**: Use a product catalog to assist in providing detailed product information.
 
 ## Installation
 
@@ -48,16 +49,9 @@ Smart Support is an autonomous sales agent that leverages OpenAI API to generate
 2. Run the application:
 
     ```sh
-    python src/main.py
+    chainlit run app.py
     ```
 
-## Running Tests
-
-To run the unit tests:
-
-```sh
-python -m unittest discover src/tests
-```
 
 ## Configuration
 
@@ -66,3 +60,12 @@ Configuration settings can be found in `src/config/config.py`. Update the settin
 ## Contributing
 
 Feel free to submit issues, fork the repository, and send pull requests. We welcome all contributions.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgements
+
+- The community of developers and contributors who have helped in the development of this project.
+
