@@ -10,6 +10,7 @@ from src.core.conversation_chains import ConversationChains
 from src.config.sales_stages import CONVERSATION_STAGES
 from src.core.sales_assistant import SalesAssistant
 from src.utils.memory import MemoryManager
+from src.utils.knowledge_base import setup_knowledge_base
 
 lead_manager = LeadManager()
 response_generator = ResponseGenerator()
@@ -25,13 +26,15 @@ async def on_chat_start():
     llm = OpenAI(api_key=Config.OPENAI_API_KEY)
     stage_analyzer_chain = conversation_chains.load_stage_analyzer_chain(llm)
     sales_conversation_chain = conversation_chains.load_sales_conversation_chain(llm)
+    knowledge_base_chain = await setup_knowledge_base("photography_knowledge.txt", llm)
 
     global sales_assistant
     sales_assistant = SalesAssistant(
         stage_analyzer_chain=stage_analyzer_chain,
         sales_conversation_utterance_chain=sales_conversation_chain,
         memory_manager=memory_manager,
-        use_tools=False
+        knowledge_base_chain=knowledge_base_chain,
+        use_tools=True
     )
 
     sales_assistant.seed_agent()
@@ -60,6 +63,12 @@ async def on_message(message):
 
     await cl.Message(
         content=f"Ted Lasso: {step_response}",
+    ).send()
+
+    # Example knowledge base query
+    kb_response = await sales_assistant.query_knowledge_base("Tell me about the best camera for beginners.")
+    await cl.Message(
+        content=f"Knowledge Base Response: {kb_response}",
     ).send()
 
 if __name__ == "__main__":

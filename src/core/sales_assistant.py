@@ -1,12 +1,13 @@
 import re
 
 class SalesAssistant:
-    def __init__(self, stage_analyzer_chain, sales_conversation_utterance_chain, memory_manager, use_tools=False):
+    def __init__(self, stage_analyzer_chain, sales_conversation_utterance_chain, memory_manager, knowledge_base_chain, use_tools=False):
         self.stage_analyzer_chain = stage_analyzer_chain
         self.sales_conversation_utterance_chain = sales_conversation_utterance_chain
         self.memory_manager = memory_manager
+        self.knowledge_base_chain = knowledge_base_chain
         self.use_tools = use_tools
-        self.conversation_history = memory_manager.get_long_term_memory() or []
+        self.conversation_history = []
         self.current_stage = "1"
 
     def seed_agent(self):
@@ -42,9 +43,9 @@ class SalesAssistant:
             "conversation_type": "call",
             "conversation_stage": self.current_stage,
             "conversation_history": conversation_history_str,
-            "tools": "",
-            "tool_input": "",
-            "tool_result": "",
+            "tools": "",  # Modify this if needed
+            "tool_input": "",  # Modify this if needed
+            "tool_result": "",  # Modify this if needed
             "agent_scratchpad": ""
         })
         response_text = result.strip()
@@ -53,6 +54,10 @@ class SalesAssistant:
         self.memory_manager.save_to_memory(self.conversation_history)
 
         return response_text
+
+    async def query_knowledge_base(self, query):
+        result = await self.knowledge_base_chain.ainvoke({"query": query})
+        return result['result'].strip()
 
     def human_step(self, human_input):
         self.conversation_history.append(f"User: {human_input}")
