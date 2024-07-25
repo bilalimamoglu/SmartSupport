@@ -59,7 +59,7 @@ async def on_message(message):
     step_response = await sales_assistant.step()
 
     await cl.Message(
-        content=f"*Sales Assistant thought*: {CONVERSATION_STAGES.get(stage_response, 'Unknown Stage')}",
+        content=f"*Sales Assistant Agent Inner thought*: {CONVERSATION_STAGES.get(stage_response, 'Unknown Stage')} \n*Current Stage*: {sales_assistant.current_stage} \n*Input*: {user_input}",
     ).send()
 
     await cl.Message(
