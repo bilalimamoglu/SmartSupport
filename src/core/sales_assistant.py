@@ -1,67 +1,46 @@
-# src/core/sales_assistant.py
-
 import re
-from src.utils.memory import MemoryManager
-from src.utils.knowledge_base import setup_knowledge_base, get_tools
-from langchain_openai import OpenAI
-from langchain_openai import ChatOpenAI  # Use ChatOpenAI for chat models
-from src.config.constants import DEFAULT_MODEL
+
+from src.models.lead import Lead
+from src.utils.database_manager import DatabaseManager
 
 class SalesAssistant:
-    def __init__(self, stage_analyzer_chain, sales_conversation_utterance_chain, memory_manager, tools=None, use_tools=False):
-        """
-        Initialize the SalesAssistant with the necessary components.
-
-        :param stage_analyzer_chain: The chain to determine the conversation stage.
-        :param sales_conversation_utterance_chain: The chain to generate conversation responses.
-        :param memory_manager: The memory manager to handle conversation history.
-        :param tools: Optional tools for assisting in the conversation.
-        :param use_tools: Whether to use the tools in the conversation.
-        """
+    def __init__(self, stage_analyzer_chain, sales_conversation_utterance_chain, memory_manager, lead_manager, tools=None, use_tools=False):
         self.stage_analyzer_chain = stage_analyzer_chain
         self.sales_conversation_utterance_chain = sales_conversation_utterance_chain
         self.memory_manager = memory_manager
+        self.lead_manager = lead_manager
         self.tools = tools if tools else []
         self.use_tools = use_tools
         self.conversation_history = []
         self.current_stage = "1"
+        self.current_lead = None
+        self.db_manager = DatabaseManager()
 
     def seed_agent(self):
-        """
-        Initialize the sales assistant agent by resetting conversation history and setting the initial stage.
-        """
         self.conversation_history = []
         self.current_stage = "1"
 
     async def determine_conversation_stage(self):
-        """
-        Determine the current stage of the conversation based on the history.
-
-        :return: Current stage of the conversation.
-        """
         conversation_history_str = "\n".join(self.conversation_history)
         result = await self.stage_analyzer_chain.ainvoke({
             "conversation_history": conversation_history_str
         })
 
-        # Ensure the result is a string
         if not isinstance(result, str):
             result = str(result)
 
-        stage_number = re.search(r'\d+', result)
-        if stage_number:
-            self.current_stage = stage_number.group().strip()
+        if isinstance(result, str):
+            stage_number = re.search(r'\d+', result)
+            if stage_number:
+                self.current_stage = stage_number.group().strip()
+            else:
+                self.current_stage = "Unknown"
         else:
             self.current_stage = "Unknown"
 
         return self.current_stage
 
     async def step(self):
-        """
-        Generate a response based on the current stage of the conversation and the history.
-
-        :return: Response text.
-        """
         conversation_history_str = "\n".join(self.conversation_history)
         if self.use_tools:
             tool_response = await self.tools[0]['chain'].ainvoke({
@@ -89,13 +68,23 @@ class SalesAssistant:
 
         self.memory_manager.save_to_memory(self.conversation_history)
 
+        # Update lead information
+        if self.current_lead:
+            self.current_lead.status = self.current_stage
+            self.lead_manager.add_or_update_lead(self.current_lead)
+            self.db_manager.add_or_update_lead(self.current_lead)
+
         return response_text
 
     def human_step(self, human_input):
-        """
-        Record a human input step in the conversation history.
-
-        :param human_input: The input text from the user.
-        """
         self.conversation_history.append(f"User: {human_input}")
         self.memory_manager.update_short_term_memory(human_input)
+        contact_info = self.extract_contact_info(human_input)  # Placeholder for contact info extraction logic
+        self.current_lead = self.db_manager.get_lead_by_contact_info(contact_info)
+        if not self.current_lead:
+            self.current_lead = Lead(name="Unknown", contact_info=contact_info, source="Chatbot")
+        self.db_manager.add_or_update_lead(self.current_lead)
+
+    def extract_contact_info(self, human_input):
+        # Placeholder for contact info extraction logic
+        return "unknown@example.com"

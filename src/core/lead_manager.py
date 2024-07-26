@@ -18,6 +18,16 @@ class LeadManager:
         with open(self.leads_file, 'w') as file:
             json.dump([lead.to_dict() for lead in self.leads], file)
 
-    def add_lead(self, lead):
-        self.leads.append(lead)
+    def add_or_update_lead(self, lead):
+        existing_lead = self.get_lead_by_contact_info(lead.contact_info)
+        if existing_lead:
+            existing_lead.update(lead)
+        else:
+            self.leads.append(lead)
         self.save_leads()
+
+    def get_lead_by_contact_info(self, contact_info):
+        for lead in self.leads:
+            if lead.contact_info == contact_info:
+                return lead
+        return None

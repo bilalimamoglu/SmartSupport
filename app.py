@@ -9,7 +9,6 @@ from src.core.sales_assistant import SalesAssistant
 from src.utils.memory import MemoryManager
 from src.utils.knowledge_base import get_tools
 from src.config.constants import DEFAULT_MODEL
-from src.models.lead import Lead
 
 # Initialize components
 lead_manager = LeadManager()
@@ -19,9 +18,6 @@ conversation_history = []
 
 @cl.on_chat_start
 async def on_chat_start():
-    """
-    Event handler for the start of the chat session. Initializes the sales assistant and sends the initial messages.
-    """
     llm = ChatOpenAI(api_key=Config.OPENAI_API_KEY, model_name=DEFAULT_MODEL)
     stage_analyzer_chain = conversation_chains.load_stage_analyzer_chain(llm)
     sales_conversation_chain = conversation_chains.load_sales_conversation_chain(llm)
@@ -33,6 +29,7 @@ async def on_chat_start():
         stage_analyzer_chain=stage_analyzer_chain,
         sales_conversation_utterance_chain=sales_conversation_chain,
         memory_manager=memory_manager,
+        lead_manager=lead_manager,
         tools=tools,
         use_tools=True
     )
@@ -50,16 +47,7 @@ async def on_chat_start():
 
 @cl.on_message
 async def on_message(message):
-    """
-    Event handler for receiving a message. Processes the message with the sales assistant and sends the response.
-
-    :param message: The incoming message from the user.
-    """
     user_input = message.content  # Extract the message content
-
-    # Capture lead information
-    lead = Lead(name="Unknown", contact_info="Unknown", source="Chatbot")
-    lead_manager.add_lead(lead)
 
     sales_assistant.human_step(user_input)
 
