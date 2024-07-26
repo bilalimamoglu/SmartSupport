@@ -1,6 +1,6 @@
 # Smart Support
 
-Smart Support is an autonomous sales agent that leverages OpenAI API to generate sales responses, track interactions, and manage leads. This tool helps sales representatives reduce manual workload by automating various sales processes.
+Smart Support is an autonomous sales agent that leverages OpenAI API to generate sales responses, track interactions, and manage leads(potential customer). This tool helps sales representatives reduce manual workload by automating various sales processes.
 
 ## Features
 

@@ -9,6 +9,7 @@ from src.core.sales_assistant import SalesAssistant
 from src.utils.memory import MemoryManager
 from src.utils.knowledge_base import get_tools
 from src.config.constants import DEFAULT_MODEL
+from src.models.lead import Lead
 
 # Initialize components
 lead_manager = LeadManager()
@@ -55,6 +56,10 @@ async def on_message(message):
     :param message: The incoming message from the user.
     """
     user_input = message.content  # Extract the message content
+
+    # Capture lead information
+    lead = Lead(name="Unknown", contact_info="Unknown", source="Chatbot")
+    lead_manager.add_lead(lead)
 
     sales_assistant.human_step(user_input)
 
