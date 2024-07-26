@@ -1,22 +1,26 @@
 # src/core/sales_assistant.py
 
 import re
+
 from src.models.lead import Lead
 from src.utils.database_manager import DatabaseManager
-import uuid
+from src.utils.extraction_tool import ExtractionTool
+
 
 class SalesAssistant:
-    def __init__(self, stage_analyzer_chain, sales_conversation_utterance_chain, memory_manager, lead_manager, db_manager, tools=None, use_tools=False):
+    def __init__(self, stage_analyzer_chain, sales_conversation_utterance_chain, memory_manager, lead_manager,
+                 db_manager, tools=None, use_tools=False):
         self.stage_analyzer_chain = stage_analyzer_chain
         self.sales_conversation_utterance_chain = sales_conversation_utterance_chain
         self.memory_manager = memory_manager
         self.lead_manager = lead_manager
-        self.db_manager = db_manager
         self.tools = tools if tools else []
         self.use_tools = use_tools
         self.conversation_history = []
         self.current_stage = "1"
         self.current_lead = None
+        self.db_manager = db_manager
+        self.extraction_tool = ExtractionTool()
 
     def seed_agent(self):
         self.conversation_history = []
@@ -75,12 +79,24 @@ class SalesAssistant:
             self.current_lead.status = self.current_stage
             self.lead_manager.add_or_update_lead(self.current_lead)
 
+        # Extract name and contact_info if provided and update the lead
+        extracted_info = await self.extraction_tool.extract_info(conversation_history_str)
+        name = re.search(r'Name: (.*?),', extracted_info).group(1)
+        contact_info = re.search(r'Contact: (.*?)$', extracted_info).group(1)
+
+        if name != "Unknown" and contact_info != "Unknown":
+            self.current_lead.name = name
+            self.current_lead.contact_info = contact_info
+            self.lead_manager.add_or_update_lead(self.current_lead)
+
         return response_text
 
     def human_step(self, human_input):
         self.conversation_history.append(f"User: {human_input}")
         self.memory_manager.update_short_term_memory(human_input)
-        self.current_lead = self.db_manager.get_lead_by_contact_info("unknown@example.com")
+        contact_info = "unknown@example.com"  # Placeholder, replace with actual logic to get contact_info if known
+        self.current_lead = self.db_manager.get_lead_by_contact_info(contact_info)
         if not self.current_lead:
-            self.current_lead = Lead(id=str(uuid.uuid4()), name="Unknown", contact_info="bilal@example.com", source="Chatbot", status="new")
-        self.db_manager.add_or_update_lead(self.current_lead)
+            self.current_lead = Lead(id="auto-generated-id", name="Unknown", contact_info=contact_info,
+                                     source="Chatbot", status="new")
+        self.lead_manager.add_or_update_lead(self.current_lead)
