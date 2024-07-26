@@ -45,13 +45,18 @@ Smart Support is an autonomous sales agent that leverages OpenAI API to generate
     ```sh
     mkdir -p data/leads data/responses
     ```
+   
+2. Create the db
 
-2. Run the application:
+    ```sh
+    python src/scripts/init_db.py
+    ```
+
+3. Run the application:
 
     ```sh
     chainlit run app.py
     ```
-
 
 ## Configuration
 

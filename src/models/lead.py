@@ -1,12 +1,22 @@
 import uuid
 
 class Lead:
-    def __init__(self, name, contact_info, source, status, lead_id=None):
-        self.id = lead_id if lead_id else str(uuid.uuid4())
+    def __init__(self, id, name, contact_info, source, status):
+        self.id = id
         self.name = name
         self.contact_info = contact_info
         self.source = source
         self.status = status
+
+    @classmethod
+    def from_dict(cls, data):
+        return cls(
+            id=data.get("id", str(uuid.uuid4())),
+            name=data["name"],
+            contact_info=data["contact_info"],
+            source=data["source"],
+            status=data["status"]
+        )
 
     def to_dict(self):
         return {
@@ -17,12 +27,8 @@ class Lead:
             "status": self.status
         }
 
-    @staticmethod
-    def from_dict(data):
-        return Lead(
-            lead_id=data.get("id"),
-            name=data.get("name"),
-            contact_info=data.get("contact_info"),
-            source=data.get("source"),
-            status=data.get("status")
-        )
+    def update(self, other):
+        self.name = other.name
+        self.contact_info = other.contact_info
+        self.source = other.source
+        self.status = other.status

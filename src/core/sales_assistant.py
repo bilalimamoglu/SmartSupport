@@ -1,20 +1,22 @@
-import re
+# src/core/sales_assistant.py
 
+import re
 from src.models.lead import Lead
 from src.utils.database_manager import DatabaseManager
+import uuid
 
 class SalesAssistant:
-    def __init__(self, stage_analyzer_chain, sales_conversation_utterance_chain, memory_manager, lead_manager, tools=None, use_tools=False):
+    def __init__(self, stage_analyzer_chain, sales_conversation_utterance_chain, memory_manager, lead_manager, db_manager, tools=None, use_tools=False):
         self.stage_analyzer_chain = stage_analyzer_chain
         self.sales_conversation_utterance_chain = sales_conversation_utterance_chain
         self.memory_manager = memory_manager
         self.lead_manager = lead_manager
+        self.db_manager = db_manager
         self.tools = tools if tools else []
         self.use_tools = use_tools
         self.conversation_history = []
         self.current_stage = "1"
         self.current_lead = None
-        self.db_manager = DatabaseManager()
 
     def seed_agent(self):
         self.conversation_history = []
@@ -72,19 +74,13 @@ class SalesAssistant:
         if self.current_lead:
             self.current_lead.status = self.current_stage
             self.lead_manager.add_or_update_lead(self.current_lead)
-            self.db_manager.add_or_update_lead(self.current_lead)
 
         return response_text
 
     def human_step(self, human_input):
         self.conversation_history.append(f"User: {human_input}")
         self.memory_manager.update_short_term_memory(human_input)
-        contact_info = self.extract_contact_info(human_input)  # Placeholder for contact info extraction logic
-        self.current_lead = self.db_manager.get_lead_by_contact_info(contact_info)
+        self.current_lead = self.db_manager.get_lead_by_contact_info("unknown@example.com")
         if not self.current_lead:
-            self.current_lead = Lead(name="Unknown", contact_info=contact_info, source="Chatbot")
+            self.current_lead = Lead(id=str(uuid.uuid4()), name="Unknown", contact_info="bilal@example.com", source="Chatbot", status="new")
         self.db_manager.add_or_update_lead(self.current_lead)
-
-    def extract_contact_info(self, human_input):
-        # Placeholder for contact info extraction logic
-        return "unknown@example.com"

@@ -1,41 +1,71 @@
+# src/utils/database_manager.py
+
 import sqlite3
+import json
 from src.models.lead import Lead
 
 class DatabaseManager:
-    def __init__(self, db_name="leads.db"):
+    def __init__(self, db_name="data/leads.db"):
         self.conn = sqlite3.connect(db_name)
         self.create_table()
 
     def create_table(self):
-        query = """
-        CREATE TABLE IF NOT EXISTS leads (
-            id TEXT PRIMARY KEY,
-            name TEXT,
-            contact_info TEXT,
-            source TEXT,
-            status TEXT
-        )
-        """
-        self.conn.execute(query)
-        self.conn.commit()
+        with self.conn:
+            self.conn.execute("""
+                CREATE TABLE IF NOT EXISTS leads (
+                    id TEXT PRIMARY KEY,
+                    name TEXT,
+                    contact_info TEXT,
+                    source TEXT,
+                    status TEXT
+                )
+            """)
 
     def add_or_update_lead(self, lead: Lead):
-        query = """
-        INSERT INTO leads (id, name, contact_info, source, status)
-        VALUES (?, ?, ?, ?, ?)
-        ON CONFLICT(id) DO UPDATE SET
-            name=excluded.name,
-            contact_info=excluded.contact_info,
-            source=excluded.source,
-            status=excluded.status
-        """
-        self.conn.execute(query, (lead.id, lead.name, lead.contact_info, lead.source, lead.status))
-        self.conn.commit()
+        with self.conn:
+            self.conn.execute("""
+                INSERT INTO leads (id, name, contact_info, source, status) 
+                VALUES (?, ?, ?, ?, ?)
+                ON CONFLICT(id) DO UPDATE SET
+                    name=excluded.name,
+                    contact_info=excluded.contact_info,
+                    source=excluded.source,
+                    status=excluded.status
+            """, (lead.id, lead.name, lead.contact_info, lead.source, lead.status))
 
     def get_lead_by_contact_info(self, contact_info):
-        query = "SELECT * FROM leads WHERE contact_info = ?"
-        cursor = self.conn.execute(query, (contact_info,))
-        row = cursor.fetchone()
-        if row:
-            return Lead(id=row[0], name=row[1], contact_info=row[2], source=row[3], status=row[4])
-        return None
+        with self.conn:
+            cur = self.conn.cursor()
+            cur.execute("SELECT * FROM leads WHERE contact_info = ?", (contact_info,))
+            row = cur.fetchone()
+            if row:
+                return Lead.from_dict({
+                    "id": row[0],
+                    "name": row[1],
+                    "contact_info": row[2],
+                    "source": row[3],
+                    "status": row[4]
+                })
+            return None
+
+    def get_all_leads(self):
+        with self.conn:
+            cur = self.conn.cursor()
+            cur.execute("SELECT * FROM leads")
+            rows = cur.fetchall()
+            return [
+                {
+                    "id": row[0],
+                    "name": row[1],
+                    "contact_info": row[2],
+                    "source": row[3],
+                    "status": row[4]
+                } for row in rows
+            ]
+
+    def initialize_db_from_file(self, file_path):
+        with open(file_path, 'r') as file:
+            leads_data = json.load(file)
+            for lead_data in leads_data:
+                lead = Lead.from_dict(lead_data)
+                self.add_or_update_lead(lead)
