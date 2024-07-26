@@ -2,6 +2,7 @@
 
 import os
 import logging
+from langchain.chat_models import ChatOpenAI
 from langchain_community.document_loaders import TextLoader
 from langchain.vectorstores import FAISS
 from langchain.embeddings import OpenAIEmbeddings
@@ -17,7 +18,7 @@ from src.utils.extraction_tool import ExtractionTool
 logger = setup_logger(__name__)
 
 
-def load_sales_doc_vector_store(file_name: str):
+async def load_sales_doc_vector_store(file_name: str):
     fullpath = os.path.join(Config.PROJECT_ROOT, 'data', 'knowledge', file_name)
     logger.info(f"Loading documents from {fullpath}")
     loader = TextLoader(fullpath)
@@ -28,18 +29,29 @@ def load_sales_doc_vector_store(file_name: str):
     logger.info("Creating vector store from documents")
     return FAISS.from_documents(new_docs, OpenAIEmbeddings())
 
+async def setup_knowledge_base(file_name: str, llm: OpenAI):
+    """
+    Set up the knowledge base for a given file and language model.
 
-def setup_knowledge_base(file_name: str, llm: OpenAI):
+    :param file_name: The name of the file containing knowledge base data.
+    :param llm: The language model instance.
+    :return: A RetrievalQA instance for querying the knowledge base.
+    """
     logger.info(f"Setting up knowledge base for {file_name}")
-    vector_store = load_sales_doc_vector_store(file_name)
+    vector_store = await load_sales_doc_vector_store(file_name)
     logger.info("Creating RetrievalQA from vector store")
-    return RetrievalQA.from_chain_type(OpenAI(api_key=Config.OPENAI_API_KEY, model=DEFAULT_MODEL),
-                                       retriever=vector_store.as_retriever())
-
+    llm = ChatOpenAI(model_name=DEFAULT_MODEL)
+    return  RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", retriever=vector_store.as_retriever())
 
 async def get_tools(product_catalog: str):
+    """
+    Initialize tools for product catalog management.
+
+    :param product_catalog: The file name of the product catalog.
+    :return: A list of tools for managing the product catalog.
+    """
     logger.info(f"Initializing tools for product catalog {product_catalog}")
-    chain = setup_knowledge_base(product_catalog, OpenAI(api_key=Config.OPENAI_API_KEY, model=DEFAULT_MODEL))
+    chain = await setup_knowledge_base(product_catalog, OpenAI(api_key=Config.OPENAI_API_KEY))
     tools = [
         {
             "name": "ProductSearch",
@@ -50,10 +62,11 @@ async def get_tools(product_catalog: str):
 
     # Include extraction tool if needed
     extraction_tool = ExtractionTool()
+    extraction_chain = extraction_tool.extraction_chain()
     tools.append({
         "name": "ExtractInfo",
         "description": "Useful for extracting name and contact information from the conversation.",
-        "tool": extraction_tool
+        "chain": extraction_chain,
     })
 
     logger.info("Tools setup complete")

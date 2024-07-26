@@ -4,7 +4,6 @@ import re
 
 from src.models.lead import Lead
 from src.utils.database_manager import DatabaseManager
-from src.utils.extraction_tool import ExtractionTool
 
 
 class SalesAssistant:
@@ -20,7 +19,6 @@ class SalesAssistant:
         self.current_stage = "1"
         self.current_lead = None
         self.db_manager = db_manager
-        self.extraction_tool = ExtractionTool()
 
     def seed_agent(self):
         self.conversation_history = []
@@ -47,6 +45,11 @@ class SalesAssistant:
         return self.current_stage
 
     async def step(self):
+        """
+        Generate a response based on the current stage of the conversation and the history.
+
+        :return: Response text.
+        """
         conversation_history_str = "\n".join(self.conversation_history)
         if self.use_tools:
             tool_response = await self.tools[0]['chain'].ainvoke({
@@ -80,14 +83,18 @@ class SalesAssistant:
             self.lead_manager.add_or_update_lead(self.current_lead)
 
         # Extract name and contact_info if provided and update the lead
-        extracted_info = await self.extraction_tool.extract_info(conversation_history_str)
-        name = re.search(r'Name: (.*?),', extracted_info).group(1)
-        contact_info = re.search(r'Contact: (.*?)$', extracted_info).group(1)
+        try:
+            extraction_chain = next(tool['chain'] for tool in self.tools if tool['name'] == "ExtractInfo")
+            extracted_info = await extraction_chain.ainvoke({"conversation_history": conversation_history_str})
+            name = re.search(r'Name: (.*?),', extracted_info['text']).group(1)
+            contact_info = re.search(r'Contact: (.*?)$', extracted_info['text']).group(1)
 
-        if name != "Unknown" and contact_info != "Unknown":
-            self.current_lead.name = name
-            self.current_lead.contact_info = contact_info
-            self.lead_manager.add_or_update_lead(self.current_lead)
+            if name != "Unknown" and contact_info != "Unknown":
+                self.current_lead.name = name
+                self.current_lead.contact_info = contact_info
+                self.lead_manager.add_or_update_lead(self.current_lead)
+        except StopIteration:
+            pass  # Handle case where ExtractInfo tool is not found
 
         return response_text
 
