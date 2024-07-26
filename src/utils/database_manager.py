@@ -2,6 +2,7 @@
 
 import sqlite3
 import json
+import logging
 from src.models.lead import Lead
 
 class DatabaseManager:
@@ -69,3 +70,10 @@ class DatabaseManager:
             for lead_data in leads_data:
                 lead = Lead.from_dict(lead_data)
                 self.add_or_update_lead(lead)
+
+    def verify_lead_update(self, contact_info):
+        return self.get_lead_by_contact_info(contact_info)
+
+    def log_all_leads(self):
+        leads = self.get_all_leads()
+        logging.info(f"All leads in DB: {leads}")

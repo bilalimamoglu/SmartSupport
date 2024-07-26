@@ -3,6 +3,7 @@
 import re
 import logging
 from src.models.lead import Lead
+import uuid
 from src.utils.database_manager import DatabaseManager
 
 # Setup logger
@@ -105,17 +106,32 @@ class SalesAssistant:
             logger.info(f"Extracted name: {name}, contact_info: {contact_info}")
 
             if name != "Unknown" and contact_info != "Unknown":
-                self.current_lead = self.db_manager.get_lead_by_contact_info(contact_info)
-                if self.current_lead:
-                    self.current_lead.name = name
-                    self.current_lead.status = self.current_stage
-                    logger.info(f"Updating existing lead in DB: {self.current_lead}")
+                existing_lead = self.db_manager.get_lead_by_contact_info(contact_info)
+                if existing_lead:
+                    existing_lead.name = name
+                    existing_lead.contact_info = contact_info
+                    existing_lead.status = self.current_stage
+                    logger.info(f"Updating existing lead in DB: {existing_lead}")
+                    self.db_manager.add_or_update_lead(existing_lead)
                 else:
-                    self.current_lead = Lead(id="auto-generated-id", name=name, contact_info=contact_info, source="Chatbot", status=self.current_stage)
-                    logger.info(f"Creating new lead in DB: {self.current_lead}")
+                    unique_id = str(uuid.uuid4())  # Generate a unique ID
+                    new_lead = Lead(id=unique_id, name=name, contact_info=contact_info, source="Chatbot",
+                                    status=self.current_stage)
+                    logger.info(f"Creating new lead in DB: {new_lead}")
+                    self.db_manager.add_or_update_lead(new_lead)
 
-                self.db_manager.add_or_update_lead(self.current_lead)
+                self.current_lead = existing_lead if existing_lead else new_lead
                 logger.info(f"Updated lead in DB: {self.current_lead}")
+
+                # Verify update
+                verified_lead = self.db_manager.verify_lead_update(contact_info)
+                if verified_lead:
+                    logger.info(f"Successfully verified lead update: {verified_lead}")
+                else:
+                    logger.error(f"Failed to verify lead update for contact_info: {contact_info}")
+
+                # Log all leads
+                self.db_manager.log_all_leads()
         except StopIteration:
             logger.warning("ExtractInfo tool not found in tools.")
         except Exception as e:
@@ -129,7 +145,10 @@ class SalesAssistant:
         contact_info = "unknown@example.com"  # Placeholder, replace with actual logic to get contact_info if known
         self.current_lead = self.db_manager.get_lead_by_contact_info(contact_info)
         if not self.current_lead:
-            self.current_lead = Lead(id="auto-generated-id", name="Unknown", contact_info=contact_info,
-                                     source="Chatbot", status="new")
-        self.lead_manager.add_or_update_lead(self.current_lead)
+            unique_id = str(uuid.uuid4())  # Generate a unique ID
+            self.current_lead = Lead(id=unique_id, name="Unknown", contact_info=contact_info, source="Chatbot",
+                                     status="new")
+            self.lead_manager.add_or_update_lead(self.current_lead)
+        else:
+            self.lead_manager.add_or_update_lead(self.current_lead)
         logger.info(f"Current lead set to: {self.current_lead}")

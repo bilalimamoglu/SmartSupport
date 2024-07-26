@@ -15,7 +15,7 @@ Smart Support is an autonomous sales agent that leverages OpenAI API to generate
 1. Clone the repository:
 
     ```sh
-    git clone https://github.com/yourusername/smart-support.git
+    git clone https://github.com/bilalimamoglu/smart-support.git
     cd smart-support
     ```
 

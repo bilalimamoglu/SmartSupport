@@ -2,13 +2,14 @@
 
 from langchain.chat_models import ChatOpenAI
 from src.config.config import Config
+from src.config.constants import DEFAULT_MODEL
 from src.config.sales_stages import SALES_PROMPT_TEMPLATE, CONVERSATION_STAGES
 from langchain.prompts import PromptTemplate
 
 
 class ConversationChains:
     def __init__(self):
-        self.client = ChatOpenAI(api_key=Config.OPENAI_API_KEY)
+        self.client = ChatOpenAI(api_key=Config.OPENAI_API_KEY, model_name=DEFAULT_MODEL)
 
     def load_stage_analyzer_chain(self, llm, verbose: bool = False):
         """
