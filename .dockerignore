@@ -1,0 +1,10 @@
+__pycache__
+ *.pyc
+ .pytest_cache
+ venv
+ .venv
+ .git
+ .gitignore
+ .DS_Store
+ data/leads/*
+ data/responses/*
